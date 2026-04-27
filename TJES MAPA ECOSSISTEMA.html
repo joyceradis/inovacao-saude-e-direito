@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa do Ecossistema Integrado</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Crimson+Text:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    #app { height: 100%; width: 100%; overflow-y: auto; overflow-x: hidden; }
+
+    header {
+      background: linear-gradient(135deg, rgba(13, 59, 102, 0.85) 0%, rgba(26, 90, 150, 0.85) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 2px solid #f0b3d4;
+      padding: 3.5rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 8px 32px rgba(13, 59, 102, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      border-radius: 0 0 12px 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .header-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      text-align: center;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    #mainTitle {
+      color: #ffffff;
+      font-family: 'Crimson Text', serif;
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin: 0 0 1.5rem 0;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    #subtitle {
+      color: #f0b3d4;
+      font-size: 0.95rem;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      margin: 0;
+      opacity: 1;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .divider {
+      height: 2px;
+      width: 80px;
+      background: #f0b3d4;
+      margin: 1.2rem auto 1.2rem auto;
+    }
+
+    .content-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      width: 100%;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 0 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: #555;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .groups-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .group-container {
+      border-radius: 12px;
+      padding: 1.5rem;
+      animation: fadeSlideIn 0.5s ease-out both;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .group-container:nth-child(1) { animation-delay: 0s; }
+    .group-container:nth-child(2) { animation-delay: 0.08s; }
+    .group-container:nth-child(3) { animation-delay: 0.16s; }
+    .group-container:nth-child(4) { animation-delay: 0.24s; }
+    .group-container:nth-child(5) { animation-delay: 0.32s; }
+    .group-container:nth-child(6) { animation-delay: 0.4s; }
+    .group-container:nth-child(7) { animation-delay: 0.48s; }
+    .group-container:nth-child(8) { animation-delay: 0.56s; }
+
+    .group-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .group-title i {
+      width: 14px;
+      height: 14px;
+    }
+
+    .node-card {
+      border-radius: 8px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .node-card.dimmed {
+      opacity: 0.3;
+    }
+
+    .node-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .node-card.active {
+      opacity: 1;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 0 2px rgba(13, 59, 102, 0.3), 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .tooltip-box {
+      position: fixed;
+      background: #1a3a52;
+      color: #fff;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      pointer-events: none;
+      z-index: 100;
+      max-width: 200px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tooltip-box.visible { opacity: 1; }
+
+    svg.connections {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 1;
+      width: 100vw;
+      height: 100vh;
+      overflow: visible;
+    }
+
+    .connection-line {
+      stroke-dasharray: 6 4;
+      stroke: rgba(13, 59, 102, 0.4);
+      stroke-width: 1.5;
+      opacity: 0.5;
+      transition: all 0.3s;
+      animation: dashMove 20s linear infinite;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .connection-line.highlighted {
+      stroke: #0d3b66;
+      opacity: 0.8;
+      stroke-width: 2;
+    }
+
+    @keyframes dashMove {
+      to { stroke-dashoffset: -200; }
+    }
+
+    @keyframes shimmer {
+      0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+      50% { transform: translate(20px, -20px); opacity: 0.8; }
+    }
+
+    footer {
+      background: #f5f7fa;
+      padding: 2rem 1rem;
+      text-align: center;
+      color: #666;
+      font-size: 0.875rem;
+      border-top: 1px solid #e0e5eb;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <svg class="connections" id="svgConnections"></svg>
+  <div id="app">
+   <header>
+    <div class="header-content">
+     <h1 id="mainTitle">Mapa do Ecossistema Integrado</h1>
+     <div class="divider"></div>
+     <p id="subtitle">Interoperabilidade Documental Saúde–Justiça</p>
+    </div>
+   </header>
+   <div class="content-wrapper">
+    <div class="legend">
+     <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(200,200,200,0.1);border:1px solid rgba(100,100,100,0.2);"></div><span>Problema Estrutural</span>
+     </div>
+     <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(13,59,102,0.1);border:1px solid rgba(13,59,102,0.2);"></div><span>Camada Integradora</span>
+     </div>
+     <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(76,175,80,0.15);border:2px solid rgba(76,175,80,0.4);"></div><span>Financiador</span>
+     </div>
+     <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(0,0,0,0.02);border:1px dashed #ccc;"></div><span>Governança Regulatória</span>
+     </div>
+    </div>
+    <div id="gridContainer" class="groups-grid"><!-- Problema Estrutural -->
+     <div class="group-container" style="background:rgba(200,200,200,0.08); border:1px solid rgba(150,150,150,0.2);">
+      <div class="group-title" style="color:#555;"><i data-lucide="alert-circle"></i> <span>Problema Estrutural</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem;">
+       <div class="node-card" style="background:#f5f5f5;border:1px solid #d0d0d0;color:#333;" data-node="CD" data-connections="RT" data-tip="Documentos médicos desorganizados">
+        Caos Documental
+       </div>
+       <div class="node-card" style="background:#f5f5f5;border:1px solid #d0d0d0;color:#333;" data-node="RT" data-connections="IE" data-tip="Trabalho repetido por falta de padronização">
+        Retrabalho
+       </div>
+       <div class="node-card" style="background:#f5f5f5;border:1px solid #d0d0d0;color:#333;" data-node="IE" data-connections="V,VP1,VP2" data-tip="Perda de tempo e recursos">
+        Ineficiência Sistêmica
+       </div>
+      </div>
+     </div><!-- Camada Integradora -->
+     <div class="group-container" style="background:rgba(13,59,102,0.08); border:1px solid rgba(13,59,102,0.2);">
+      <div class="group-title" style="color:#0d3b66;"><i data-lucide="layers"></i> <span>Camada Integradora</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:1rem;">
+       <div style="flex:1;">
+        <div class="node-card" style="background:#d4ecf7;border:1px solid #0d3b66;color:#0d3b66;text-align:center;" data-node="S" data-connections="V" data-tip="Setor de saúde">
+         Saúde
+        </div>
+       </div>
+       <div style="flex:1;">
+        <div class="node-card" style="background:#d4618e;border:2px solid #b8445f;color:#fff;text-align:center;font-weight:700;padding:1rem;font-size:0.9rem;position:relative;overflow:hidden;box-shadow:inset 0 1px 2px rgba(255,255,255,0.3), 0 8px 24px rgba(212, 97, 142, 0.4);" data-node="V" data-connections="IS,LGPD,CNJ,SEC,ES,PIL,BID" data-tip="Plataforma central">
+         <div style="position:absolute;top:-50%;right:-20%;width:300px;height:300px;background:radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);pointer-events:none;animation:shimmer 4s ease-in-out infinite;"></div> PLATAFORMA<br>
+          INTEGRADA
+        </div>
+       </div>
+       <div style="flex:1;">
+        <div class="node-card" style="background:#d4ecf7;border:1px solid #0d3b66;color:#0d3b66;text-align:center;" data-node="D" data-connections="V" data-tip="Setor jurídico">
+         Direito
+        </div>
+       </div>
+      </div>
+     </div><!-- Financiador -->
+     <div class="group-container" style="background:rgba(76,175,80,0.1); border:2px solid rgba(76,175,80,0.3);">
+      <div class="group-title" style="color:#2e7d32;"><i data-lucide="landmark"></i> <span>Financiador</span>
+      </div>
+      <div class="node-card" style="background:#c8e6c9;border:2px solid #66bb6a;color:#1b5e20;padding:1rem;text-align:center;font-weight:600;" data-node="BID" data-connections="V,PIL" data-tip="BID"><strong>BID</strong><br><span style="font-size:0.8rem;font-weight:400;opacity:0.9;">Banco Interamericano</span>
+      </div>
+     </div><!-- Implementação -->
+     <div class="group-container" style="background:rgba(13,59,102,0.06); border:1px solid rgba(13,59,102,0.15);">
+      <div class="group-title" style="color:#0d3b66;"><i data-lucide="cog"></i> <span>Implementação</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem; max-width:400px;">
+       <div class="node-card" style="background:#d4ecf7;border:2px solid #0d3b66;color:#0d3b66;text-align:center;min-height:60px;display:flex;align-items:center;justify-content:center;" data-node="UP" data-connections="PIL" data-tip="Upload de Petições">
+        Upload de Petições
+       </div>
+       <div class="node-card" style="background:#d4ecf7;border:2px solid #0d3b66;color:#0d3b66;text-align:center;min-height:60px;display:flex;align-items:center;justify-content:center;" data-node="PIL" data-connections="V,GOV" data-tip="Piloto Estruturado">
+        Piloto Estruturado
+       </div>
+      </div>
+     </div><!-- Governança -->
+     <div class="group-container" style="background:rgba(0,0,0,0.02); border:1px dashed #ddd;">
+      <div class="group-title" style="color:#666;"><i data-lucide="shield"></i> <span>Governança Regulatória</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.75rem;">
+       <div class="node-card" style="background:#f8f8f8;border:1px dashed #ccc;color:#555;text-align:center;" data-node="LGPD" data-tip="LGPD">
+        LGPD
+       </div>
+       <div class="node-card" style="background:#f8f8f8;border:1px dashed #ccc;color:#555;text-align:center;" data-node="CFM" data-tip="CFM">
+        CFM 2.454
+       </div>
+       <div class="node-card" style="background:#f8f8f8;border:1px dashed #ccc;color:#555;text-align:center;" data-node="CNJ" data-tip="CNJ">
+        CNJ 615
+       </div>
+       <div class="node-card" style="background:#f8f8f8;border:1px dashed #ccc;color:#555;text-align:center;" data-node="SEC" data-tip="Segurança">
+        RBAC + MFA
+       </div>
+      </div>
+     </div><!-- Territorial -->
+     <div class="group-container" style="background:rgba(13,59,102,0.08); border:1px solid rgba(13,59,102,0.2);">
+      <div class="group-title" style="color:#0d3b66;"><i data-lucide="map-pin"></i> <span>Localização Territorial</span>
+      </div>
+      <div style="display:flex; justify-content:center; gap:3rem; flex-wrap:wrap;">
+       <div class="node-card" style="background:#0d3b66;border:3px solid #051a2e;color:#fff;padding:1rem;text-align:center;font-weight:600;min-width:140px;" data-node="ES" data-connections="VP1,VP2,VP3,VP4,GOV" data-tip="TJES - Tribunal de Justiça do Espírito Santo">
+        TJES<br><span style="font-size:0.75rem;opacity:0.8;">Piloto</span>
+       </div>
+       <div class="node-card" style="background:rgba(13,59,102,0.3);border:2px dashed rgba(13,59,102,0.6);color:#0d3b66;padding:1rem;text-align:center;font-weight:600;min-width:140px;" data-node="GOV" data-connections="VP1,VP2,VP3,VP4" data-tip="Governo Federal">
+        Governo Federal
+       </div>
+      </div>
+     </div><!-- Resultados -->
+     <div class="group-container" style="background:rgba(248,249,250,0.6); border:1px solid rgba(200,200,200,0.3);">
+      <div class="group-title" style="color:#0d3b66;"><i data-lucide="trending-up"></i> <span>Resultados Esperados</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.75rem;">
+       <div class="node-card" style="background:#fff;border:2px dashed rgba(150,150,150,0.4);color:#333;text-align:center;min-height:70px;display:flex;align-items:center;justify-content:center;font-weight:600;" data-node="VP1" data-tip="Redução de Retrabalho">
+        Redução de Retrabalho
+       </div>
+       <div class="node-card" style="background:#fff;border:2px dashed rgba(150,150,150,0.4);color:#333;text-align:center;min-height:70px;display:flex;align-items:center;justify-content:center;font-weight:600;" data-node="VP2" data-tip="Base Decisória">
+        Base Decisória
+       </div>
+       <div class="node-card" style="background:#fff;border:2px dashed rgba(150,150,150,0.4);color:#333;text-align:center;min-height:70px;display:flex;align-items:center;justify-content:center;font-weight:600;" data-node="VP3" data-tip="Capacidade">
+        Capacidade Institucional
+       </div>
+       <div class="node-card" style="background:#fff;border:2px dashed rgba(150,150,150,0.4);color:#333;text-align:center;min-height:70px;display:flex;align-items:center;justify-content:center;font-weight:600;" data-node="VP4" data-tip="Vertical Econômica">
+        Vertical Econômica
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <div class="group-container" style="background:rgba(13,59,102,0.06); border:1px solid rgba(13,59,102,0.15);margin:0;padding:1rem;">
+     <h3 style="margin:0 0 0.5rem 0;color:#0d3b66;font-size:0.875rem;font-weight:600;">Autora</h3>
+     <p style="margin:0.25rem 0;color:#0d3b66;font-weight:500;font-size:0.875rem;">Dra. Joyce Radis de Souza de Oliveira</p>
+     <p style="margin:0.25rem 0;color:#666;font-size:0.875rem;">CRM ES 21188</p>
+     <p style="margin:0;color:#666;font-size:0.875rem;">Médica Perita Judicial</p>
+    </div>
+   </footer>
+   <div id="tooltip" class="tooltip-box"></div>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: 'Mapa do Ecossistema Integrado',
+      subtitle: 'Interoperabilidade Documental Saúde–Justiça'
+    };
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          const c = { ...defaultConfig, ...config };
+          document.getElementById('mainTitle').textContent = c.main_title;
+          document.getElementById('subtitle').textContent = c.subtitle;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => {
+          const c = { ...defaultConfig, ...config };
+          return new Map([
+            ['main_title', c.main_title],
+            ['subtitle', c.subtitle]
+          ]);
+        }
+      });
+    }
+
+    const tooltip = document.getElementById('tooltip');
+    const allNodes = document.querySelectorAll('.node-card[data-node]');
+    let activeNode = null;
+
+    const connectionMap = {};
+    const reverseMap = {};
+
+    allNodes.forEach(node => {
+      const id = node.dataset.node;
+      const conns = node.dataset.connections
+        ? node.dataset.connections.split(',').map(s => s.trim()).filter(Boolean)
+        : [];
+
+      connectionMap[id] = conns;
+
+      conns.forEach(to => {
+        if (!reverseMap[to]) reverseMap[to] = [];
+        reverseMap[to].push(id);
+      });
+    });
+
+    function getNodeEl(id) {
+      return document.querySelector(`[data-node="${id}"]`);
+    }
+
+    function getAllConnected(id) {
+      const forward = connectionMap[id] || [];
+      const backward = reverseMap[id] || [];
+      return [...new Set([...forward, ...backward])];
+    }
+
+    function resetGraph() {
+      activeNode = null;
+      allNodes.forEach(node => {
+        node.classList.remove('active', 'dimmed');
+      });
+      document.querySelectorAll('.connection-line').forEach(line => {
+        line.classList.remove('highlighted');
+      });
+    }
+
+    function highlightNode(id) {
+      activeNode = id;
+      const connected = getAllConnected(id);
+
+      allNodes.forEach(node => {
+        const nodeId = node.dataset.node;
+        const isRelevant = nodeId === id || connected.includes(nodeId);
+        node.classList.toggle('active', nodeId === id);
+        node.classList.toggle('dimmed', !isRelevant);
+      });
+
+      document.querySelectorAll('.connection-line').forEach(line => {
+        const from = line.dataset.from;
+        const to = line.dataset.to;
+        line.classList.toggle('highlighted', from === id || to === id);
+      });
+    }
+
+    allNodes.forEach(node => {
+      node.addEventListener('click', () => {
+        const id = node.dataset.node;
+
+        if (activeNode === id) {
+          resetGraph();
+          return;
+        }
+
+        highlightNode(id);
+      });
+
+      node.addEventListener('mouseenter', (e) => {
+        const tip = node.dataset.tip;
+        if (!tip) return;
+        tooltip.textContent = tip;
+        tooltip.classList.add('visible');
+      });
+      node.addEventListener('mousemove', (e) => {
+        tooltip.style.left = (e.clientX + 12) + 'px';
+        tooltip.style.top = (e.clientY - 40) + 'px';
+      });
+      node.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+      });
+    });
+
+    function drawConnections() {
+      const svg = document.getElementById('svgConnections');
+      svg.innerHTML = '';
+
+      Object.entries(connectionMap).forEach(([fromId, tos]) => {
+        const fromEl = getNodeEl(fromId);
+        if (!fromEl) return;
+        
+        tos.forEach(toId => {
+          const toEl = getNodeEl(toId);
+          if (!toEl) return;
+          
+          // Get viewport coordinates
+          const fromRect = fromEl.getBoundingClientRect();
+          const toRect = toEl.getBoundingClientRect();
+          
+          const x1 = fromRect.left + fromRect.width / 2;
+          const y1 = fromRect.top + fromRect.height / 2;
+          const x2 = toRect.left + toRect.width / 2;
+          const y2 = toRect.top + toRect.height / 2;
+
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+          line.classList.add('connection-line');
+          line.dataset.from = fromId;
+          line.dataset.to = toId;
+          svg.appendChild(line);
+        });
+      });
+    }
+
+    function scheduleDrawConnections() {
+      window.requestAnimationFrame(drawConnections);
+    }
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+    setTimeout(drawConnections, 100);
+    window.addEventListener('resize', scheduleDrawConnections);
+    window.addEventListener('scroll', scheduleDrawConnections, true);
+    document.addEventListener('scroll', scheduleDrawConnections, true);
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f206f3b835c649f',t:'MTc3NzE1MjQ3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
