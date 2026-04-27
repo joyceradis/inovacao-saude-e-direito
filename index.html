@@ -1,0 +1,1511 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protótipo Conceitual · Saúde–Gestão Municipal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#0d2d4a">
+  <meta name="color-scheme" content="light">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --navy: #0d2d4a;
+      --navy-mid: #0d3b66;
+      --navy-light: #1a5496;
+      --rose: #d4618e;
+      --rose-light: #f0b3d4;
+      --rose-pale: #fce8f3;
+      --sky: #d9edf9;
+      --sky-border: #8fb9dd;
+      --ink: #1c2b3a;
+      --muted: #5f7080;
+      --ghost: #f4f7fa;
+      --line: rgba(13,59,102,0.14);
+      --radius: 16px;
+      --panel-shadow: 0 24px 80px rgba(13,45,74,.22), 0 0 0 1px rgba(13,59,102,.1);
+      --soft-shadow: 0 10px 28px rgba(13,45,74,.08);
+      --glass: rgba(255,255,255,.78);
+      --glass-strong: rgba(255,255,255,.9);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(240,179,212,.12), transparent 24%),
+        radial-gradient(circle at top right, rgba(13,59,102,.08), transparent 28%),
+        linear-gradient(180deg, #f6f9fc 0%, #eef3f8 100%);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS PARTICLES ── */
+    #particleCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      background: linear-gradient(135deg, var(--navy) 0%, #14466e 100%);
+      padding: 3rem 1.5rem 2.5rem;
+      border-bottom: 2px solid var(--rose-light);
+      box-shadow: 0 16px 48px rgba(13,45,74,.28);
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--rose-light), var(--rose), var(--rose-light), transparent);
+    }
+
+    .header-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .header-text { flex: 1; min-width: 260px; }
+
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: .72rem;
+      letter-spacing: .16em;
+      color: var(--rose-light);
+      text-transform: uppercase;
+      margin-bottom: .75rem;
+      opacity: .85;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.06;
+      letter-spacing: -.03em;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--rose-light);
+    }
+
+    .header-sub {
+      margin-top: 1.2rem;
+      color: rgba(255,255,255,.75);
+      font-size: .95rem;
+      line-height: 1.6;
+      max-width: 580px;
+    }
+
+    .header-sub strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .header-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1.4rem;
+    }
+
+    .pill {
+      padding: .42rem .85rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 600;
+      border: 1px solid rgba(240,179,212,.3);
+      color: var(--rose-light);
+      background: rgba(240,179,212,.08);
+      cursor: default;
+      transition: background .2s, color .2s;
+    }
+
+    .pill:hover {
+      background: rgba(240,179,212,.18);
+      color: #fff;
+    }
+
+    /* ── CONTROLS ── */
+    .controls-bar {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 5;
+    }
+
+    .controls-bar-wrapper {
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 6px 18px rgba(13,45,74,.05);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: .85rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .52rem 1.1rem;
+      border-radius: 10px;
+      font-size: .83rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .22s cubic-bezier(.4,0,.2,1);
+      border: none;
+      font-family: inherit;
+      box-shadow: 0 2px 8px rgba(13,45,74,.04);
+    }
+
+    .btn-primary {
+      background: var(--navy-mid);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(13,59,102,.22);
+    }
+    .btn-primary:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,59,102,.28); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-rose {
+      background: var(--rose);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(212,97,142,.24);
+    }
+    .btn-rose:hover { background: #c24d7e; transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: rgba(13,59,102,.07);
+      color: var(--navy-mid);
+    }
+    .btn-ghost:hover { background: rgba(13,59,102,.14); }
+
+    .btn-ghost.active {
+      background: var(--navy-mid);
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(13,59,102,.18);
+    }
+
+    .btn svg { width: 14px; height: 14px; }
+
+    .controls-sep { width: 1px; height: 24px; background: var(--line); }
+
+    .view-mode-label {
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.8rem 1.5rem 4rem;
+      position: relative;
+      z-index: 5;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .8rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ── GROUPS ── */
+    .groups { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .group {
+      border-radius: 20px;
+      padding: 1.3rem;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp .5s ease-out both;
+      transition: box-shadow .3s, transform .28s ease, border-color .28s ease;
+    }
+
+    .group:hover {
+      box-shadow: 0 18px 54px rgba(13,45,74,.1);
+      transform: translateY(-2px);
+    }
+
+    .group::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .group-pain    { background: rgba(220,220,228,.18); border: 1px solid rgba(180,180,200,.28); }
+    .group-core    { background: rgba(13,59,102,.07);   border: 1px solid rgba(13,59,102,.18); }
+    .group-rules   { background: rgba(255,255,255,.5);  border: 1px dashed rgba(160,170,185,.45); }
+    .group-how     { background: rgba(13,59,102,.05);   border: 1px solid rgba(13,59,102,.14); }
+    .group-output  { background: rgba(248,249,252,.8);  border: 1px solid rgba(200,210,220,.35); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .group:nth-child(1) { animation-delay: .05s; }
+    .group:nth-child(2) { animation-delay: .12s; }
+    .group:nth-child(3) { animation-delay: .19s; }
+    .group:nth-child(4) { animation-delay: .26s; }
+    .group:nth-child(5) { animation-delay: .33s; }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      margin-bottom: .95rem;
+    }
+
+    .group-label {
+      font-size: .72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .group-header svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    /* ── NODE GRID ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: .8rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: .8rem; }
+    .flex-core { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .flex-core > * { flex: 1; min-width: 160px; }
+    .flex-core .core-wrap { flex: 1.2; min-width: 200px; }
+
+    /* ── NODE CARD ── */
+    .node {
+      border-radius: var(--radius);
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform .28s cubic-bezier(.4,0,.2,1),
+                  box-shadow .28s cubic-bezier(.4,0,.2,1),
+                  opacity .22s;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 82px;
+      font-weight: 600;
+      font-size: .9rem;
+      line-height: 1.35;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    /* Ripple */
+    .node .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
+      transform: scale(0);
+      animation: rippleAnim .55s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    .node:hover {
+      transform: translateY(-5px) scale(1.025);
+      box-shadow: 0 18px 34px rgba(13,45,74,.12);
+      z-index: 3;
+    }
+
+    .node.dimmed {
+      opacity: .2;
+      pointer-events: none;
+      transform: none !important;
+    }
+
+    .node.highlighted {
+      outline: 2px solid rgba(212,97,142,.9);
+      outline-offset: 3px;
+      box-shadow: 0 12px 28px rgba(212,97,142,.16);
+    }
+
+    .node.is-active {
+      transform: translateY(-6px) scale(1.035);
+      box-shadow: 0 0 0 3px rgba(212,97,142,.28), 0 22px 44px rgba(13,45,74,.2) !important;
+    }
+
+    /* Node variants */
+    .node-pain  { background: #f2f2f5; border: 1px solid #d5d5de; color: #38404c; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+    .node-sky   { background: var(--sky); border: 1px solid var(--sky-border); color: var(--navy-mid); box-shadow: 0 4px 14px rgba(13,59,102,.06); }
+    .node-core  { background: linear-gradient(135deg,#d05a87,#bc3d6e); border: none; color: #fff; box-shadow: 0 12px 32px rgba(188,61,110,.32), inset 0 1px 2px rgba(255,255,255,.2); font-size: 1.05rem; font-weight: 800; letter-spacing: .01em; min-height: 108px; overflow: visible; position: relative; }
+    .node-rule  { background: #fafbfc; border: 1px dashed #c5ccd5; color: #505a68; box-shadow: 0 2px 8px rgba(0,0,0,.03); }
+    .node-how   { background: var(--sky); border: 2px solid var(--navy-mid); color: var(--navy-mid); box-shadow: 0 4px 14px rgba(13,59,102,.08); }
+    .node-out   { background: #fff; border: 2px dashed rgba(150,160,175,.4); color: #2c3a48; box-shadow: 0 4px 12px rgba(0,0,0,.04); }
+
+    /* Pulse on core */
+    .node-core::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 18px;
+      border: 2px solid rgba(240,179,212,.5);
+      animation: pulseRing 2.8s ease-out infinite;
+    }
+
+    .node-core::before {
+      content: '';
+      position: absolute;
+      inset: 10% 12%;
+      border-radius: 18px;
+      background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.22), transparent 58%);
+      pointer-events: none;
+      filter: blur(6px);
+      opacity: .9;
+    }
+
+    @keyframes pulseRing {
+      0%   { opacity: .9; transform: scale(1); }
+      70%  { opacity: 0;  transform: scale(1.08); }
+      100% { opacity: 0;  transform: scale(1.08); }
+    }
+
+    /* ── DETAIL PANEL ── */
+    #detailPanel {
+      position: fixed;
+      top: 50%;
+      right: -400px;
+      transform: translateY(-50%);
+      width: min(360px, 92vw);
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: var(--panel-shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 60;
+      transition: right .38s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+
+    #detailPanel.open { right: 1.2rem; }
+
+    .panel-header {
+      padding: 1.4rem 1.4rem 1rem;
+      background: linear-gradient(135deg, var(--navy), #14517a);
+      color: #fff;
+      position: relative;
+    }
+
+    .panel-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      transition: background .2s;
+      font-family: inherit;
+    }
+    .panel-close:hover { background: rgba(255,255,255,.28); }
+
+    .panel-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .14em;
+      color: var(--rose-light);
+      text-transform: uppercase;
+      margin-bottom: .4rem;
+    }
+
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .panel-body { padding: 1.2rem 1.4rem 1.5rem; background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,253,.96)); }
+
+    .panel-desc {
+      font-size: .9rem;
+      line-height: 1.6;
+      color: #3a4a5a;
+      margin-bottom: 1.1rem;
+      text-wrap: pretty;
+    }
+
+    .panel-connections { margin-top: .8rem; }
+
+    .panel-conn-label {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+
+    .conn-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+
+    .conn-chip {
+      padding: .32rem .7rem;
+      border-radius: 8px;
+      font-size: .78rem;
+      font-weight: 600;
+      background: var(--sky);
+      color: var(--navy-mid);
+      border: 1px solid var(--sky-border);
+      cursor: pointer;
+      transition: background .18s, color .18s, transform .18s, box-shadow .18s;
+      box-shadow: 0 2px 8px rgba(13,59,102,.05);
+    }
+
+    .conn-chip:hover {
+      background: var(--navy-mid);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(13,59,102,.18);
+    }
+
+    .panel-metric {
+      margin-top: 1rem;
+      padding: .9rem 1rem;
+      background: linear-gradient(180deg, #f7fafc, #f1f6fb);
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    .panel-metric-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--rose);
+      line-height: 1;
+    }
+
+    .panel-metric-desc {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: .25rem;
+    }
+
+    /* ── SVG CONNECTIONS ── */
+    #svgLayer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      width: 100vw;
+      height: 100vh;
+      overflow: visible;
+    }
+
+    .conn-line {
+      stroke: rgba(13,59,102,.18);
+      opacity: .9;
+      stroke-width: 1.4;
+      stroke-dasharray: 6 5;
+      fill: none;
+      animation: flowDash 24s linear infinite;
+      vector-effect: non-scaling-stroke;
+      transition: stroke .3s, stroke-width .3s, opacity .3s, filter .3s;
+    }
+
+    .conn-line.active-line {
+      stroke: rgba(212,97,142,.86);
+      stroke-width: 2.8;
+      filter: drop-shadow(0 0 8px rgba(212,97,142,.24));
+      opacity: 1;
+    }
+
+    .flow-dot {
+      fill: var(--rose);
+      opacity: 0;
+    }
+
+    .flow-dot.active-dot { opacity: 1; }
+
+    @keyframes flowDash {
+      to { stroke-dashoffset: -240; }
+    }
+
+    /* ── TOUR OVERLAY ── */
+    #tourOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13,29,50,.78);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #tourOverlay.on { display: flex; }
+
+    .tour-card {
+      background: #fff;
+      border-radius: 22px;
+      padding: 2rem 2.2rem;
+      max-width: 380px;
+      width: 90vw;
+      box-shadow: 0 32px 80px rgba(0,0,0,.28);
+      border: 1px solid rgba(13,59,102,.08);
+      animation: scaleIn .3s ease-out;
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .tour-step {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .12em;
+      color: var(--rose);
+      text-transform: uppercase;
+      margin-bottom: .55rem;
+    }
+
+    .tour-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: .65rem;
+      line-height: 1.2;
+    }
+
+    .tour-body {
+      font-size: .92rem;
+      color: #3a4a5a;
+      line-height: 1.62;
+      margin-bottom: 1.4rem;
+    }
+
+    .tour-actions { display: flex; gap: .65rem; justify-content: flex-end; }
+
+    .tour-progress {
+      display: flex;
+      gap: .35rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .tour-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #dde3ea;
+      transition: background .2s, transform .2s;
+    }
+
+    .tour-dot.active { background: var(--rose); transform: scale(1.3); }
+    .tour-dot.done   { background: var(--navy-mid); }
+
+    /* ── SEARCH ── */
+    .search-wrap {
+      position: relative;
+      margin-left: auto;
+    }
+
+    .search-input {
+      padding: .5rem .9rem .5rem 2.1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(13,59,102,.18);
+      font-size: .82rem;
+      font-family: inherit;
+      color: var(--ink);
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 2px 10px rgba(13,45,74,.04);
+      width: 180px;
+      transition: width .3s, border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .search-input:focus {
+      width: 230px;
+      border-color: var(--navy-mid);
+      box-shadow: 0 0 0 3px rgba(13,59,102,.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: .65rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      width: 14px; height: 14px;
+      pointer-events: none;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+      position: relative;
+      z-index: 5;
+    }
+
+    .footer-card {
+      background: rgba(255,255,255,.84);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      box-shadow: var(--soft-shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .footer-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose), var(--navy-mid));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .footer-info strong {
+      display: block;
+      font-weight: 700;
+      color: var(--navy);
+      font-size: .95rem;
+    }
+
+    .footer-info span {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      font-size: .74rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: .8rem;
+      opacity: .82;
+      text-align: center;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 720px) {
+      .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 460px) {
+      .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .flex-core > * { flex: unset; width: 100%; }
+      #detailPanel { top: auto; bottom: 0; right: 0 !important; transform: none; width: 100vw; border-radius: 22px 22px 0 0; max-height: 80vh; overflow-y: auto; transition: bottom .38s cubic-bezier(.4,0,.2,1); }
+      #detailPanel:not(.open) { bottom: -600px; right: 0 !important; }
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .5rem .9rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--navy-mid);
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .stat-chip svg { width: 13px; height: 13px; color: var(--rose); }
+
+    .stat-chip .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--rose);
+    }
+
+    /* ── HINT ── */
+    .hint-bar {
+      text-align: center;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+    }
+
+    .hint-bar svg { width: 13px; height: 13px; }
+  </style>
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+  <svg id="svgLayer"></svg>
+
+  <div id="tourOverlay">
+    <div class="tour-card" id="tourCard">
+      <div class="tour-progress" id="tourProgress"></div>
+      <div class="tour-step" id="tourStep"></div>
+      <div class="tour-title" id="tourTitle"></div>
+      <div class="tour-body" id="tourBody"></div>
+      <div class="tour-actions">
+        <button class="btn btn-ghost" id="tourSkip" onclick="endTour()">Fechar</button>
+        <button class="btn btn-primary" id="tourNext" onclick="nextTour()">Próximo →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="detailPanel">
+    <div class="panel-header">
+      <button class="panel-close" onclick="closePanel()">✕</button>
+      <div class="panel-eyebrow" id="panelEyebrow">Detalhes do nó</div>
+      <div class="panel-title" id="panelTitle">—</div>
+    </div>
+    <div class="panel-body">
+      <div class="panel-desc" id="panelDesc"></div>
+      <div class="panel-metric" id="panelMetric" style="display:none;">
+        <div class="panel-metric-val" id="panelMetricVal"></div>
+        <div class="panel-metric-desc" id="panelMetricDesc"></div>
+      </div>
+      <div class="panel-connections" id="panelConnections"></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="header-text">
+        <div class="eyebrow">Vitória · Espírito Santo · Proposta técnica exploratória</div>
+        <h1>Ecossistema<br><em>Saúde–Gestão Municipal</em></h1>
+        <p class="header-sub">
+          <strong>O problema não é apenas tecnológico. É a ausência de uma camada técnica capaz de transformar informação médica fragmentada em decisão institucional clara, rastreável e útil.</strong><br><br>
+          Protótipo conceitual de uma camada de inteligência médico-documental para qualificar fluxos públicos, reduzir retrabalho intersetorial e apoiar decisões mais claras entre saúde, jurídico e gestão municipal.
+        </p>
+        <div class="header-pills">
+          <span class="pill">Inovação aplicada</span>
+          <span class="pill">Mais integração entre secretarias</span>
+          <span class="pill">Mais clareza para decidir</span>
+          <span class="pill">Vitória como referência</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls-bar-wrapper">
+    <div class="controls-bar">
+      <button class="btn btn-primary" onclick="startTour()" title="Tour guiado">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+        Tour guiado
+      </button>
+      <button class="btn btn-rose" onclick="pulseFlow()" title="Animar fluxo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Ver fluxo
+      </button>
+      <div class="controls-sep"></div>
+      <span class="view-mode-label">Filtro:</span>
+      <button class="btn btn-ghost" id="filterAll" onclick="setFilter('all')" title="Todos">Todos</button>
+      <button class="btn btn-ghost" id="filterDor" onclick="setFilter('dor')" title="Dores">Gargalos</button>
+      <button class="btn btn-ghost" id="filterSolucao" onclick="setFilter('solucao')" title="Camada integradora">Camada</button>
+      <button class="btn btn-ghost" id="filterResultado" onclick="setFilter('resultado')" title="Resultados">Impactos</button>
+      <div class="search-wrap" style="margin-left:auto;">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" id="searchInput" type="text" placeholder="Buscar nó…" oninput="onSearch(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="stats-bar">
+      <div class="stat-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span class="stat-num" id="statNodes">0</span> nós mapeados</div>
+      <div class="stat-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 12h-5"/><path d="M12 12l-3-3m0 0 3-3m-3 3H3"/><path d="M21 5v14"/></svg><span class="stat-num" id="statConns">0</span> conexões mapeadas</div>
+      <div class="stat-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span class="stat-num">1</span> visão integrada de cidade</div>
+    </div>
+
+    <div class="hint-bar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Passe o mouse ou clique em qualquer bloco para revelar relações, impacto e possibilidades de aplicação
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#e8e8ef;border:1px solid #c8c8d4;"></div>Onde o sistema perde força</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--sky);border:1px solid var(--sky-border);"></div>Camada que organiza o fluxo</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#fafbfc;border:1px dashed #c5ccd5;"></div>Regras do jogo</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#fff;border:2px dashed rgba(150,160,175,.4);"></div>O que isso pode gerar</div>
+    </div>
+
+    <div class="groups" id="groups">
+
+      <div class="group group-pain" data-filter="dor">
+        <div class="group-header">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8a2244" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="group-label" style="color:#5e6773;">Gargalos da gestão municipal</span>
+        </div>
+        <div class="grid-3">
+          <div class="node node-pain" data-node="FRAG" data-group="dor"
+               data-title="Fragmentação Intersetorial"
+               data-eyebrow="Gargalo estrutural"
+               data-desc="Dados de saúde circulam de forma desigual entre SEMUS, SEMSA, Procuradoria e demais secretarias. Cada setor opera com seu próprio sistema, dificultando análise integrada e decisão qualificada."
+               data-connects="RUIDO"
+               data-metric-val="Piloto"
+               data-metric-desc="indicador a ser mensurado: lacunas informacionais entre setores"
+               data-tip="Dados de saúde fragmentados entre secretarias municipais">
+            Informação<br>fragmentada
+          </div>
+          <div class="node node-pain" data-node="RUIDO" data-group="dor"
+               data-title="Retrabalho Intersetorial"
+               data-eyebrow="Custo operacional"
+               data-desc="Gestores e técnicos reinterpretam os mesmos dados repetidamente. Processos que cruzam Saúde, Assistência Social e Procuradoria duplicam esforços sem padronização de fluxo ou linguagem comum."
+               data-connects="PERDA,FRAG"
+               data-metric-val="Tempo"
+               data-metric-desc="indicador a mensurar: tempo técnico consumido por retrabalho intersetorial"
+               data-tip="Dados reinterpretados repetidamente entre setores">
+            Ruído entre<br>secretarias
+          </div>
+          <div class="node node-pain" data-node="PERDA" data-group="dor"
+               data-title="Perda de Capacidade de Gestão"
+               data-eyebrow="Impacto na entrega pública"
+               data-desc="Decisões municipais baseadas em informação incompleta ou contraditória reduzem a capacidade de gestão. A população recebe serviços menos eficientes do que o orçamento disponível permitiria."
+               data-connects="PLAT,RUIDO"
+               data-metric-val="Capacidade"
+               data-metric-desc="indicador a avaliar: perda operacional associada a gargalos de informação"
+               data-tip="Gestão menos eficiente do que o orçamento permitiria">
+            Perda de capacidade<br>de gestão
+          </div>
+        </div>
+      </div>
+
+      <div class="group group-core" data-filter="solucao">
+        <div class="group-header">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--navy-mid)" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span class="group-label" style="color:var(--navy-mid);">Camada integradora municipal</span>
+        </div>
+        <div class="flex-core">
+          <div>
+            <div class="node node-sky" data-node="SAUDE" data-group="solucao"
+                 data-title="SEMUS"
+                 data-eyebrow="Secretaria Municipal de Saúde"
+                 data-desc="Origem técnica e documental do problema. A SEMUS concentra prontuários, laudos, relatórios de UBSs, UPAs e hospitais municipais — base de dados que precisa dialogar com os demais setores da PMV."
+                 data-connects="PLAT"
+                 data-tip="Secretaria Municipal de Saúde — origem documental">
+              🏥 Saúde pública
+            </div>
+          </div>
+          <div class="core-wrap">
+            <div class="node node-core" data-node="PLAT" data-group="solucao"
+                 data-title="Camada Integrada Municipal"
+                 data-eyebrow="Núcleo do ecossistema municipal"
+                 data-desc="Proposta de camada organizadora para estruturar a circulação da informação entre saúde, jurídico e gestão municipal, antes que dados clínicos e administrativos cheguem fragmentados ao fluxo decisório. A tecnologia entra como meio; o núcleo é governança da informação, linguagem técnica e rastreabilidade."
+                 data-connects="GOV,CLAREZA,TRABALHO,SAUDE,DIREITO"
+                 data-metric-val="PMV"
+                 data-metric-desc="pioneira em integração saúde–gestão no Brasil"
+                 data-tip="Núcleo integrador da informação municipal">
+              CAMADA<br>INTEGRADA MUNICIPAL
+            </div>
+          </div>
+          <div>
+            <div class="node node-sky" data-node="DIREITO" data-group="solucao"
+                 data-title="Procuradoria Geral"
+                 data-eyebrow="Assessoria Jurídica Municipal"
+                 data-desc="Destino jurídico e decisório da informação de saúde. A PGM e as secretarias jurídicas precisam de documentação técnica estruturada para responder demandas com agilidade e segurança institucional."
+                 data-connects="PLAT"
+                 data-tip="Procuradoria Geral do Município — destino jurídico">
+              ⚖️ Jurídico municipal
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group group-rules" data-filter="solucao">
+        <div class="group-header">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="group-label" style="color:#666;">Marcos regulatórios e pilares de governança</span>
+        </div>
+        <div class="grid-4">
+          <div class="node node-rule" data-node="LGPD" data-group="solucao"
+               data-title="LGPD"
+               data-eyebrow="Lei Geral de Proteção de Dados"
+               data-desc="Proteção de dados pessoais sensíveis de saúde dos munícipes de Vitória. Finalidade, responsabilidade e consentimento são pilares obrigatórios para operar qualquer plataforma de informação de saúde no âmbito municipal."
+               data-connects="PLAT"
+               data-tip="Proteção de dados dos munícipes">
+            🔒 LGPD
+          </div>
+          <div class="node node-rule" data-node="CFM" data-group="solucao"
+               data-title="Ética Médica"
+               data-eyebrow="Código de ética e CFM"
+               data-desc="Atuação médica dentro dos limites éticos e técnicos aplicáveis à documentação em saúde, sigilo profissional, responsabilidade técnica, uso de tecnologias digitais e apoio à organização de fluxos assistenciais e administrativos."
+               data-connects="PLAT"
+               data-tip="Ética médica e limites técnicos">
+            ⚕️ Ética médica
+          </div>
+          <div class="node node-rule" data-node="GOV" data-group="solucao"
+               data-title="Governança Municipal"
+               data-eyebrow="LRF · PNAB · e-Saúde"
+               data-desc="Compatibilidade com a Lei de Responsabilidade Fiscal, Política Nacional de Atenção Básica e agenda federal de e-Saúde. Alinhamento com o Plano Municipal de Saúde de Vitória e as diretrizes do CONASS."
+               data-connects="PLAT"
+               data-tip="Alinhamento com marcos da gestão municipal">
+            🏛️ Governança municipal
+          </div>
+          <div class="node node-rule" data-node="SEG" data-group="solucao"
+               data-title="Segurança da Informação"
+               data-eyebrow="Infraestrutura de confiança"
+               data-desc="Controle de acesso granular por secretaria, rastreabilidade de cada operação e conformidade com o decreto de segurança da informação do Governo Federal. Dados dos munícipes protegidos em todas as camadas."
+               data-connects="PLAT"
+               data-tip="Segurança e rastreabilidade por secretaria">
+            🛡️ Segurança
+          </div>
+        </div>
+      </div>
+
+      <div class="group group-how" data-filter="solucao">
+        <div class="group-header">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--navy-mid)" stroke-width="2.2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span class="group-label" style="color:var(--navy-mid);">Como isso começa em Vitória</span>
+        </div>
+        <div class="grid-3" style="max-width:820px;">
+          <div class="node node-how" data-node="PILOTO" data-group="solucao"
+               data-title="Piloto em Vitória"
+               data-eyebrow="Primeira etapa — capital do ES"
+               data-desc="Aplicação inicial nas UBSs e UPAs de Vitória em parceria com SEMUS e PGM. Vitória reúne escala, infraestrutura e perfil de demanda ideal para validar o modelo antes de levá-lo a demais municípios capixabas."
+               data-connects="PLAT,METRICA"
+               data-tip="Aplicação inicial nas unidades de saúde de Vitória">
+            🚀 Piloto em Vitória
+          </div>
+          <div class="node node-how" data-node="METRICA" data-group="solucao"
+               data-title="Métricas de Impacto"
+               data-eyebrow="Mensuração contínua"
+               data-desc="Painel em tempo real com indicadores de redução de tempo de resposta entre secretarias, clareza documental, custo por processo e satisfação dos gestores. Base para prestação de contas e relatórios à Câmara Municipal."
+               data-connects="GANHO,PILOTO"
+               data-tip="Painel de indicadores para o gestor municipal">
+            📊 Métricas de impacto
+          </div>
+          <div class="node node-how" data-node="ESCALA" data-group="solucao"
+               data-title="Escala para o ES"
+               data-eyebrow="Expansão sustentável"
+               data-desc="Após validação em Vitória, o modelo é replicável para os demais municípios capixabas via COSEMS-ES e SESA, sem perder consistência metodológica. Vitória como laboratório e exportador de boas práticas para o Brasil."
+               data-connects="GANHO"
+               data-tip="Expansão para os demais municípios do Espírito Santo">
+            📈 Escala para o ES
+          </div>
+        </div>
+      </div>
+
+      <div class="group group-output" data-filter="resultado">
+        <div class="group-header">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--navy-mid)" stroke-width="2.2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <span class="group-label" style="color:var(--navy-mid);">Impactos a mensurar em ambiente-piloto</span>
+        </div>
+        <div class="grid-4">
+          <div class="node node-out" data-node="CLAREZA" data-group="resultado"
+               data-title="Gestão mais clara"
+               data-eyebrow="Qualidade da informação"
+               data-desc="Secretarias passam a compartilhar informação estruturada, legível e acionável. Gestores municipais tomam decisões com base em dados consolidados, reduzindo ambiguidade e conflito entre setores."
+               data-connects="PLAT,GANHO"
+               data-metric-val="Meta"
+               data-metric-desc="redução do tempo de resposta entre áreas, a ser validada em piloto"
+               data-tip="Informação estruturada e acionável entre secretarias">
+            ✨ Mais clareza<br>de gestão
+          </div>
+          <div class="node node-out" data-node="GANHO" data-group="resultado"
+               data-title="Menos Retrabalho"
+               data-eyebrow="Eficiência operacional"
+               data-desc="Fluxos que hoje cruzam três ou quatro setores com perda de informação a cada etapa passam a ter uma via única, padronizada e rastreável. Servidores municipais ganham tempo para entregas de maior valor."
+               data-connects="METRICA,ESCALA,CLAREZA"
+               data-metric-val="Redução"
+               data-metric-desc="potencial de redução de retrabalho, condicionado à mensuração do piloto"
+               data-tip="Menos energia perdida em fluxos intersetoriais">
+            ⚡ Menos<br>retrabalho
+          </div>
+          <div class="node node-out" data-node="CAP" data-group="resultado"
+               data-title="Mais capacidade municipal"
+               data-eyebrow="Resultado institucional"
+               data-desc="Com informação fluindo melhor, a PMV ganha capacidade operacional real: mais demandas resolvidas, menor tempo de resposta ao cidadão, decisões mais rápidas e baseadas em evidências locais."
+               data-connects="PLAT"
+               data-tip="Mais capacidade de entrega para o cidadão de Vitória">
+            🏙️ Mais capacidade<br>municipal
+          </div>
+          <div class="node node-out" data-node="TRABALHO" data-group="resultado"
+               data-title="Vitória como laboratório de referência"
+               data-eyebrow="Legado para o ES e o Brasil"
+               data-desc="Vitória pode se posicionar como ambiente de validação de um modelo de integração entre saúde, jurídico e gestão municipal, com potencial de gerar boas práticas replicáveis para outros municípios."
+               data-connects="PLAT,ESCALA"
+               data-metric-val="Referência"
+               data-metric-desc="potencial modelo-piloto de integração entre saúde, jurídico e gestão municipal"
+               data-tip="Vitória como modelo nacional de gestão municipal integrada">
+            🏆 Vitória como<br>referência
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-card">
+      <div class="footer-avatar">J</div>
+      <div class="footer-info">
+        <strong>Dra. Joyce Radis de Souza Oliveira</strong>
+        <span>CRM ES 21188 · Médica Perita Judicial</span>
+      </div>
+    </div>
+    <div class="footer-note">
+      Protótipo conceitual independente para discussão técnica sobre integração de informações em saúde, gestão municipal e governança documental. Não representa projeto oficial da Prefeitura Municipal de Vitória.
+    </div>
+  </footer>
+
+  <script>
+  lucide && lucide.createIcons && lucide.createIcons();
+
+  /* ─── DATA ─── */
+  const nodeData = {};
+  document.querySelectorAll('.node[data-node]').forEach(el => {
+    const id = el.dataset.node;
+    nodeData[id] = {
+      el,
+      id,
+      title: el.dataset.title,
+      eyebrow: el.dataset.eyebrow,
+      desc: el.dataset.desc,
+      connects: el.dataset.connects ? el.dataset.connects.split(',').map(s => s.trim()) : [],
+      metricVal: el.dataset.metricVal,
+      metricDesc: el.dataset.metricDesc,
+      tip: el.dataset.tip,
+      group: el.dataset.group,
+    };
+  });
+
+  /* ─── COUNTER ANIMATION ─── */
+  const totalNodes = Object.keys(nodeData).length;
+  let totalConns = 0;
+  Object.values(nodeData).forEach(n => totalConns += n.connects.length);
+
+  function animCount(el, target, suffix = '') {
+    const isStr = isNaN(parseInt(target));
+    if (isStr) { el.textContent = target; return; }
+    const num = parseInt(target);
+    let cur = 0, step = Math.max(1, Math.ceil(num / 30));
+    const timer = setInterval(() => {
+      cur = Math.min(cur + step, num);
+      el.textContent = cur + suffix;
+      if (cur >= num) clearInterval(timer);
+    }, 30);
+  }
+
+  setTimeout(() => {
+    animCount(document.getElementById('statNodes'), totalNodes);
+    animCount(document.getElementById('statConns'), totalConns);
+  }, 500);
+
+  /* ─── SVG CONNECTIONS ─── */
+  const svg = document.getElementById('svgLayer');
+  const lines = {};
+  const dots = {};
+
+  function getCenter(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function drawLines() {
+    Object.values(nodeData).forEach(n => {
+      n.connects.forEach(toId => {
+        if (!nodeData[toId]) return;
+        
+        const key = [n.id, toId].sort().join('-');
+        const c1 = getCenter(n.el);
+        const c2 = getCenter(nodeData[toId].el);
+        const mx = (c1.x + c2.x) / 2;
+        const my = (c1.y + c2.y) / 2 - 30;
+        const newPathD = `M${c1.x},${c1.y} Q${mx},${my} ${c2.x},${c2.y}`;
+
+        // Se a linha ainda não existe, cria. Se já existe, pula esta etapa.
+        if (!lines[key]) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          line.classList.add('conn-line');
+          line.dataset.from = n.id;
+          line.dataset.to = toId;
+          svg.appendChild(line);
+          lines[key] = line;
+
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('r', '5');
+          circle.classList.add('flow-dot');
+          circle.dataset.key = key;
+          svg.appendChild(circle);
+          dots[key] = { el: circle, path: line };
+        }
+
+        // Atualiza as coordenadas da curva no scroll sem destruir o elemento
+        lines[key].setAttribute('d', newPathD);
+      });
+    });
+  }
+
+  window.addEventListener('resize', drawLines);
+  window.addEventListener('scroll', drawLines, true);
+  setTimeout(drawLines, 160);
+
+  /* ─── FLOW ANIMATION ─── */
+  let flowActive = false;
+  let flowFrame;
+
+  function animateDot(dot, pathEl, duration) {
+    const len = pathEl.getTotalLength ? pathEl.getTotalLength() : 200;
+    let start = null;
+    function step(ts) {
+      if (!flowActive) return;
+      if (!start) start = ts;
+      const t = ((ts - start) % duration) / duration;
+      try {
+        const pt = pathEl.getPointAtLength(t * len);
+        dot.setAttribute('cx', pt.x);
+        dot.setAttribute('cy', pt.y);
+      } catch(e) {}
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function pulseFlow() {
+    flowActive = !flowActive;
+    if (flowActive) {
+      Object.values(dots).forEach((d, i) => {
+        d.el.classList.add('active-dot');
+        animateDot(d.el, d.path, 2800 + i * 200);
+      });
+      Object.values(lines).forEach(l => l.classList.add('active-line'));
+    } else {
+      Object.values(dots).forEach(d => d.el.classList.remove('active-dot'));
+      Object.values(lines).forEach(l => l.classList.remove('active-line'));
+    }
+  }
+
+  /* ─── NODE INTERACTION ─── */
+  let activeNodeId = null;
+
+  function resetAll() {
+    activeNodeId = null;
+    Object.values(nodeData).forEach(n => {
+      n.el.classList.remove('dimmed', 'highlighted', 'is-active');
+    });
+    Object.values(lines).forEach(l => l.classList.remove('active-line'));
+    if (!flowActive) Object.values(dots).forEach(d => d.el.classList.remove('active-dot'));
+    closePanel();
+    Object.values(nodeData).forEach(n => n.el.style.opacity = '');
+  }
+
+  function activateNode(id) {
+    if (activeNodeId === id) { resetAll(); return; }
+    activeNodeId = id;
+    const n = nodeData[id];
+    if (!n) return;
+    
+    document.getElementById('searchInput').value = '';
+
+    const related = new Set([id, ...n.connects]);
+    // also add reverse connections
+    Object.values(nodeData).forEach(other => {
+      if (other.connects.includes(id)) related.add(other.id);
+    });
+
+    Object.values(nodeData).forEach(other => {
+      other.el.classList.toggle('dimmed', !related.has(other.id));
+      other.el.classList.toggle('highlighted', related.has(other.id) && other.id !== id);
+      other.el.classList.toggle('is-active', other.id === id);
+    });
+
+    Object.values(lines).forEach(l => {
+      const on = l.dataset.from === id || l.dataset.to === id;
+      l.classList.toggle('active-line', on);
+    });
+
+    Object.values(dots).forEach(d => {
+      const key = d.el.dataset.key;
+      const [a, b] = key.split('-');
+      d.el.classList.toggle('active-dot', a === id || b === id);
+    });
+
+    openPanel(n);
+  }
+
+  /* ─── RIPPLE ─── */
+  function addRipple(el, e) {
+    const rect = el.getBoundingClientRect();
+    const r = document.createElement('span');
+    r.classList.add('ripple');
+    r.style.width = r.style.height = Math.max(rect.width, rect.height) + 'px';
+    r.style.left = (e.clientX - rect.left - rect.width/2) + 'px';
+    r.style.top  = (e.clientY - rect.top  - rect.height/2) + 'px';
+    el.appendChild(r);
+    r.addEventListener('animationend', () => r.remove());
+  }
+
+  Object.values(nodeData).forEach(n => {
+    n.el.addEventListener('click', e => {
+      addRipple(n.el, e);
+      activateNode(n.id);
+    });
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { resetAll(); endTour(); } });
+
+  /* ─── PANEL ─── */
+  function openPanel(n) {
+    document.getElementById('panelEyebrow').textContent = n.eyebrow || 'Detalhes';
+    document.getElementById('panelTitle').textContent = n.title;
+    document.getElementById('panelDesc').textContent = n.desc;
+
+    const metricWrap = document.getElementById('panelMetric');
+    if (n.metricVal) {
+      metricWrap.style.display = 'block';
+      document.getElementById('panelMetricVal').textContent = n.metricVal;
+      document.getElementById('panelMetricDesc').textContent = n.metricDesc;
+    } else {
+      metricWrap.style.display = 'none';
+    }
+
+    const connWrap = document.getElementById('panelConnections');
+    if (n.connects.length > 0) {
+      const allRelated = [...n.connects];
+      Object.values(nodeData).forEach(other => {
+        if (other.connects.includes(n.id) && !allRelated.includes(other.id)) allRelated.push(other.id);
+      });
+
+      connWrap.innerHTML = `
+        <div class="panel-conn-label">Conecta com</div>
+        <div class="conn-chips">
+          ${allRelated.filter(id => nodeData[id]).map(id =>
+            `<span class="conn-chip" onclick="activateNode('${id}')">${nodeData[id].title}</span>`
+          ).join('')}
+        </div>`;
+    } else {
+      connWrap.innerHTML = '';
+    }
+
+    document.getElementById('detailPanel').classList.add('open');
+  }
+
+  function closePanel() {
+    document.getElementById('detailPanel').classList.remove('open');
+  }
+
+  /* ─── SEARCH ─── */
+  function onSearch(val) {
+    const q = val.toLowerCase().trim();
+    if (!q) {
+      Object.values(nodeData).forEach(n => n.el.style.opacity = '');
+      return;
+    }
+    Object.values(nodeData).forEach(n => {
+      const hay = [n.title, n.desc, n.eyebrow, n.tip].filter(Boolean).join(' ').toLowerCase();
+      const match = hay.includes(q);
+      n.el.style.opacity = match ? '1' : '.14';
+    });
+  }
+
+  /* ─── FILTER ─── */
+  let currentFilter = 'all';
+
+  function setFilter(f) {
+    currentFilter = f;
+    document.querySelectorAll('[id^=filter]').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter' + f.charAt(0).toUpperCase() + f.slice(1)).classList.add('active');
+
+    document.querySelectorAll('.group').forEach(g => {
+      if (f === 'all') { g.style.opacity = '1'; g.style.pointerEvents = 'auto'; return; }
+      const match = g.dataset.filter === f;
+      g.style.opacity = match ? '1' : '.35';
+      g.style.pointerEvents = match ? 'auto' : 'none';
+    });
+  }
+
+  setFilter('all');
+
+  /* ─── TOUR ─── */
+  const tourSteps = [
+    {
+      title: 'Bem-vindo ao Ecossistema',
+      body: 'Este mapa mostra, de forma visual e interativa, como a informação de saúde pode circular melhor entre secretarias — com menos ruído, mais clareza e mais capacidade de gestão.',
+    },
+    {
+      title: 'Os gargalos da gestão municipal',
+      body: 'Aqui estão os principais gargalos: informação fragmentada, retrabalho entre setores e perda de capacidade de gestão. Clique nos blocos para ver onde o sistema perde força.',
+      highlight: 'FRAG',
+    },
+    {
+      title: 'A Camada Integrada',
+      body: 'Este é o núcleo da proposta: uma camada integrada para organizar melhor a circulação da informação entre saúde, jurídico e gestão municipal antes que o fluxo se torne ineficiente.',
+      highlight: 'PLAT',
+    },
+    {
+      title: 'Marcos regulatórios',
+      body: 'LGPD, ética, governança e segurança não aparecem aqui como burocracia, mas como a base que torna a proposta legítima, segura e viável dentro da administração pública.',
+      highlight: 'LGPD',
+    },
+    {
+      title: 'O impacto no ambiente-piloto',
+      body: 'O objetivo final é simples de entender e forte de comunicar: mais clareza, menos retrabalho, mais capacidade para a gestão e inovação municipal aplicada.',
+      highlight: 'TRABALHO',
+    },
+  ];
+
+  function clearNodeInlineOpacity() {
+    Object.values(nodeData).forEach(n => n.el.style.opacity = '');
+  }
+
+  let tourIdx = 0;
+
+  function startTour() {
+    tourIdx = 0;
+    document.getElementById('tourOverlay').classList.add('on');
+    renderTour();
+  }
+
+  function renderTour() {
+    const step = tourSteps[tourIdx];
+    document.getElementById('tourStep').textContent = `Etapa ${tourIdx + 1} de ${tourSteps.length}`;
+    document.getElementById('tourTitle').textContent = step.title;
+    document.getElementById('tourBody').textContent = step.body;
+    document.getElementById('tourNext').textContent = tourIdx < tourSteps.length - 1 ? 'Próximo →' : 'Concluir ✓';
+
+    const prog = document.getElementById('tourProgress');
+    prog.innerHTML = tourSteps.map((_, i) =>
+      `<div class="tour-dot ${i < tourIdx ? 'done' : ''} ${i === tourIdx ? 'active' : ''}"></div>`
+    ).join('');
+
+    if (step.highlight) {
+      resetAll();
+      setTimeout(() => activateNode(step.highlight), 200);
+    }
+  }
+
+  function nextTour() {
+    if (tourIdx < tourSteps.length - 1) { tourIdx++; renderTour(); }
+    else endTour();
+  }
+
+  function endTour() {
+    document.getElementById('tourOverlay').classList.remove('on');
+    resetAll();
+    clearNodeInlineOpacity();
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.group').forEach((g) => {
+        g.style.transform = 'translateY(0)';
+      });
+    }, 80);
+  });
+
+  /* ─── PARTICLE CANVAS ─── */
+  (function() {
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function Particle() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.size = Math.random() * 2.2 + .5;
+      this.speedX = (Math.random() - .5) * .35;
+      this.speedY = (Math.random() - .5) * .35;
+      this.alpha = Math.random() * .22 + .04;
+      this.color = Math.random() > .5 ? '13,59,102' : '212,97,142';
+    }
+
+    function init() {
+      resize();
+      particles = Array.from({ length: 52 }, () => new Particle());
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    init();
+    draw();
+  })();
+  </script>
+</body>
+</html>
